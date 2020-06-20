@@ -3,11 +3,10 @@ const express     = require("express");
 const fccTesting  = require("./freeCodeCamp/fcctesting.js");
 const session     = require("express-session");
 const passport    = require("passport");
-const dotenv      = require("dotenv");
 
 const app = express();
-dotenv.config();
 fccTesting(app); //For FCC testing purposes
+process.env.SESSION_SECRET = 'nightCat';
 
 app.set('view engine', 'pug');
 app.use("/public", express.static(process.cwd() + "/public"));
@@ -30,6 +29,19 @@ app.route("/").get((req, res) => {
   console.log(process.env.SESSION_SECRET);
 });
 
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser((id, done) => {
+  db.collection('users').findOne(
+    {_id: ObjectID(id)},
+    (err, doc) => {
+      done(null, doc);
+    }
+  )
+});
+ 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Listening on port " + process.env.PORT);
 });
